@@ -1,0 +1,54 @@
+name: Android CI/CD
+on:
+  pull_request:
+    branches:
+      - develop
+      - staging
+      - master
+  push:
+    branches:
+      - develop
+      - staging
+      - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11' # 안드로이드 Gradle Plugin 7.4.1을 쓰기 위한 최소 자바 버전은 11이다
+          distribution: 'adopt'
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew # Build with Gradle을 실행하려면 권한이 필요하다. 권한을 요청하는 스크립트
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Build and upload APK
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/develop" ]; then
+            ./gradlew assembleDevelop
+            apk_path="./app/build/outputs/apk/develop/app-develop.apk"
+          elif [ "${{ github.ref }}" == "refs/heads/staging" ]; then
+            ./gradlew assembleStaging
+            apk_path="./app/build/outputs/apk/staging/app-staging.apk"
+          elif [ "${{ github.ref }}" == "refs/heads/master" ]; then
+            ./gradlew assembleRelease
+            apk_path="./app/build/outputs/apk/release/app-release.apk"
+          fi
+          echo "APK_PATH=$apk_path" >> $GITHUB_ENV
+
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3 # Github Actions에서 Slack 알림을 보내기 위한 액션
+        with:
+          status: ${{ job.status }}
+          text: |
+            Build ${{ job.status }} for ${{ github.ref }} branch.
+            APK file: ${{ env.APK_PATH }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
