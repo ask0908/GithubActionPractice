@@ -18,6 +18,15 @@ android {
     }
 
     buildTypes {
+        develop {
+            debuggable true
+            applicationIdSuffix ".debug"
+        }
+        staging {
+            minifyEnabled false
+            debuggable true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
