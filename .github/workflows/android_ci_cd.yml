@@ -27,22 +27,22 @@ jobs:
         run: chmod +x gradlew # Build with Gradle을 실행하려면 권한이 필요하다. 권한을 요청하는 스크립트
 
       - name: Build and upload APK
-          run: |
-            BRANCH_NAME=$(echo "${{ github.ref }}" | sed -r "s/refs\/heads\///g")
-            DATE=$(date +%Y%m%d)
-            APK_NAME="${DATE}_${BRANCH_NAME}.apk"
-            if [ "${BRANCH_NAME}" == "develop" ]; then
-              ./gradlew assembleDevelop
-              apk_path="./app/build/outputs/apk/develop/app-develop.apk"
-            elif [ "${BRANCH_NAME}" == "staging" ]; then
-              ./gradlew assembleStaging
-              apk_path="./app/build/outputs/apk/staging/app-staging.apk"
-            elif [ "${BRANCH_NAME}" == "master" ]; then
-              ./gradlew assembleRelease
-              apk_path="./app/build/outputs/apk/release/app-release.apk"
-            fi
-            cp "$apk_path" "./app/build/outputs/apk/$APK_NAME"
-            echo "APK_PATH=./app/build/outputs/apk/$APK_NAME" >> $GITHUB_ENV
+        run: |
+          BRANCH_NAME=$(echo "${{ github.ref }}" | sed -r "s/refs\/heads\///g")
+          DATE=$(date +%Y%m%d)
+          APK_NAME="${DATE}_${BRANCH_NAME}.apk"
+          if [ "${BRANCH_NAME}" == "develop" ]; then
+            ./gradlew assembleDevelop
+            apk_path="./app/build/outputs/apk/develop/app-develop.apk"
+          elif [ "${BRANCH_NAME}" == "staging" ]; then
+            ./gradlew assembleStaging
+            apk_path="./app/build/outputs/apk/staging/app-staging.apk"
+          elif [ "${BRANCH_NAME}" == "master" ]; then
+            ./gradlew assembleRelease
+            apk_path="./app/build/outputs/apk/release/app-release.apk"
+          fi
+          cp "$apk_path" "./app/build/outputs/apk/$APK_NAME"
+          echo "APK_PATH=./app/build/outputs/apk/$APK_NAME" >> $GITHUB_ENV
 
       - name: Send Slack notification
         uses: 8398a7/action-slack@v3 # Github Actions에서 Slack 알림을 보내기 위한 액션
